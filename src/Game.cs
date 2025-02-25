@@ -5,12 +5,14 @@ class Game
 	// Private fields
 	private Parser parser;
 	private Room currentRoom;
+	private Player player;
 
 	// Constructor
 	public Game()
 	{
 		parser = new Parser();
 		CreateRooms();
+		player = new Player();
 	}
 
 	// Initialise the Rooms (and the Items)
@@ -101,6 +103,9 @@ class Game
 				break;
 			case "look":
 				Console.WriteLine(currentRoom.GetLongDescription());
+				break;
+			case "status":
+				Console.WriteLine($"Health: {player.GetHealth()}");
 				break;
 		}
 
