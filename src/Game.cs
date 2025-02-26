@@ -119,7 +119,7 @@ class Game
 			case "status":
 				Console.WriteLine($"Health: {player.GetHealth()}");
 				if(player.inventory.GetWeight() != 0){
-					Console.WriteLine("Items in inventory: ");
+					Console.WriteLine("Items in inventory: ("+player.inventory.GetWeight()*10+"dag/"+player.inventory.GetMaxWeight()*10+"dag)");
 				}
 				foreach(KeyValuePair<string, Item> item in player.inventory.GetInventory()){
 					Console.WriteLine(item.Key+" - "+item.Value.Description+" - "+item.Value.Weight*10+"dag");
