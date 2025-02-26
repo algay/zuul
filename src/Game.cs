@@ -4,15 +4,18 @@ class Game
 {
 	// Private fields
 	private Parser parser;
-	private Room currentRoom;
 	private Player player;
 
 	// Constructor
 	public Game()
 	{
+		NewGame();
+	}
+	public void NewGame()
+	{
 		parser = new Parser();
-		CreateRooms();
 		player = new Player();
+		CreateRooms();
 	}
 
 	// Initialise the Rooms (and the Items)
@@ -45,7 +48,7 @@ class Game
 		// ...
 
 		// Start game outside
-		currentRoom = outside;
+		player.SetCurrentRoom(outside);
 	}
 
 	//  Main play routine. Loops until end of play.
@@ -58,8 +61,16 @@ class Game
 		bool finished = false;
 		while (!finished)
 		{
-			Command command = parser.GetCommand();
-			finished = ProcessCommand(command);
+			if (player.IsAlive()){
+				Command command = parser.GetCommand();
+				finished = ProcessCommand(command);
+			}
+			else{
+				Console.WriteLine("You Died!");
+				Console.WriteLine("Press [Enter] to try again");
+				Console.ReadLine();
+				NewGame();
+			}
 		}
 		Console.WriteLine("Thank you for playing.");
 		Console.WriteLine("Press [Enter] to continue.");
@@ -74,7 +85,7 @@ class Game
 		Console.WriteLine("Zuul is a new, incredibly boring adventure game.");
 		Console.WriteLine("Type 'help' if you need help.");
 		Console.WriteLine();
-		Console.WriteLine(currentRoom.GetLongDescription());
+		Console.WriteLine(player.GetCurrentRoom().GetLongDescription());
 	}
 
 	// Given a command, process (that is: execute) the command.
@@ -97,15 +108,20 @@ class Game
 				break;
 			case "go":
 				GoRoom(command);
+				player.Damage(5);
 				break;
 			case "quit":
 				wantToQuit = true;
 				break;
 			case "look":
-				Console.WriteLine(currentRoom.GetLongDescription());
+				Console.WriteLine(player.GetCurrentRoom().GetLongDescription());
 				break;
 			case "status":
 				Console.WriteLine($"Health: {player.GetHealth()}");
+				foreach(KeyValuePair<string, Item> item in player.inventory.GetInventory()){
+					Console.WriteLine(item.Key);
+					Console.WriteLine(item.Value.Description);
+				}
 				break;
 		}
 
@@ -141,14 +157,14 @@ class Game
 		string direction = command.SecondWord;
 
 		// Try to go to the next room.
-		Room nextRoom = currentRoom.GetExit(direction);
+		Room nextRoom = player.GetCurrentRoom().GetExit(direction);
 		if (nextRoom == null)
 		{
 			Console.WriteLine("There is no door to "+direction+"!");
 			return;
 		}
 
-		currentRoom = nextRoom;
-		Console.WriteLine(currentRoom.GetLongDescription());
+		player.SetCurrentRoom(nextRoom);
+		Console.WriteLine(player.GetCurrentRoom().GetLongDescription());
 	}
 }
