@@ -118,9 +118,11 @@ class Game
 				break;
 			case "status":
 				Console.WriteLine($"Health: {player.GetHealth()}");
+				if(player.inventory.GetWeight() != 0){
+					Console.WriteLine("Items in inventory: ");
+				}
 				foreach(KeyValuePair<string, Item> item in player.inventory.GetInventory()){
-					Console.WriteLine(item.Key);
-					Console.WriteLine(item.Value.Description);
+					Console.WriteLine(item.Key+" - "+item.Value.Description+" - "+item.Value.Weight*10+"dag");
 				}
 				break;
 		}
