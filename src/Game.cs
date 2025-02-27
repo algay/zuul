@@ -85,7 +85,7 @@ class Game
 		Console.WriteLine("Zuul is a new, incredibly boring adventure game.");
 		Console.WriteLine("Type 'help' if you need help.");
 		Console.WriteLine();
-		Console.WriteLine(player.GetCurrentRoom().GetLongDescription());
+		Look();
 	}
 
 	// Given a command, process (that is: execute) the command.
@@ -114,7 +114,7 @@ class Game
 				wantToQuit = true;
 				break;
 			case "look":
-				Console.WriteLine(player.GetCurrentRoom().GetLongDescription());
+				Look();
 				break;
 			case "status":
 				Console.WriteLine($"Health: {player.GetHealth()}");
@@ -124,6 +124,12 @@ class Game
 				foreach(KeyValuePair<string, Item> item in player.inventory.GetInventory()){
 					Console.WriteLine(item.Key+" - "+item.Value.Description+" - "+item.Value.Weight*10+"dag");
 				}
+				break;
+			case "take":
+				Take(command);
+				break;
+			case "drop":
+				Drop(command);
 				break;
 		}
 
@@ -144,9 +150,62 @@ class Game
 		// let the parser print the commands
 		parser.PrintValidCommands();
 	}
+	private void Look(){
+		Console.WriteLine(player.GetCurrentRoom().GetLongDescription());
+		if(player.GetCurrentRoom().inventory.GetWeight() != 0){
+			Console.WriteLine("Items in room: ");
+		}
+		foreach(KeyValuePair<string, Item> item in player.GetCurrentRoom().inventory.GetInventory()){
+					Console.WriteLine(item.Key+" - "+item.Value.Description+" - "+item.Value.Weight*10+"dag");
+	}
+	}
 
 	// Try to go to one direction. If there is an exit, enter the new
 	// room, otherwise print an error message.
+	private void Take(Command command){
+		if(!command.HasSecondWord()){
+			Console.WriteLine("Which item?");
+			return;
+		}
+		string itemName = command.SecondWord;
+		if(player.GetCurrentRoom().inventory.Contains(itemName)){
+
+			Item item = player.GetCurrentRoom().inventory.GetItem(itemName); 
+			if(player.inventory.GetMaxWeight()>=player.inventory.GetWeight()+item.Weight){
+				player.inventory.Add(itemName, item);
+				player.GetCurrentRoom().inventory.Remove(itemName);
+				Console.WriteLine(itemName+" was added to your inventory!");
+			}
+			else {
+				Console.WriteLine("There isn't enough space in your inventory!");
+			}
+		}
+		else{
+			Console.WriteLine("Room doesn't contain "+itemName+".");
+		}
+	}
+	private void Drop(Command command){
+		if(!command.HasSecondWord()){
+			Console.WriteLine("Which item?");
+			return;
+		}
+		string itemName = command.SecondWord;
+		if(player.inventory.Contains(itemName)){
+			Item item = player.inventory.GetItem(itemName);
+			if(player.GetCurrentRoom().inventory.GetMaxWeight()>=player.GetCurrentRoom().inventory.GetWeight()+item.Weight){
+				player.GetCurrentRoom().inventory.Add(itemName, item);
+				player.inventory.Remove(itemName);
+				Console.WriteLine(itemName+" was dropped from your inventory!");
+			}
+			else {
+				Console.WriteLine("There isn't enough space in the room");
+			}
+		}
+		else{
+			Console.WriteLine("Your inventory doesn't contain "+itemName+".");
+		}
+	}
+
 	private void GoRoom(Command command)
 	{
 		if(!command.HasSecondWord())
