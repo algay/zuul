@@ -6,13 +6,39 @@ class Room
 	private string description;
 	private Dictionary<string, Room> exits; // stores exits of this room.
 	public Inventory inventory;
+	private bool isLocked;
+	private bool lockType;
+	private string code;
+	private string lockDescription;
 	// Create a room described "description". Initially, it has no exits.
 	// "description" is something like "in a kitchen" or "in a court yard".
+
 	public Room(string desc)
 	{
 		description = desc;
 		exits = new Dictionary<string, Room>();
 		inventory = new Inventory(500);
+	}
+	public void Lock(bool typeOfLock, string lockCode, string lockDesc){
+		isLocked = true;
+		lockType = typeOfLock;
+		code = lockCode;
+		lockDescription = lockDesc;
+	}
+	public bool IsLocked(){
+		return isLocked;
+	}
+	public void Unlock(){
+		isLocked = false;
+	}
+	public bool GetLockType(){
+		return lockType;
+	}
+	public string GetCode(){
+		return code;
+	}
+	public string GetLockDescription(){
+		return lockDescription;
 	}
 
 	// Define an exit for this room.

@@ -32,7 +32,6 @@ class Game
 		outside.AddExit("east", theatre);
 		outside.AddExit("south", lab);
 		outside.AddExit("west", pub);
-
 		theatre.AddExit("west", outside);
 
 		pub.AddExit("east", outside);
@@ -117,19 +116,16 @@ class Game
 				Look();
 				break;
 			case "status":
-				Console.WriteLine($"Health: {player.GetHealth()}");
-				if(player.inventory.GetWeight() != 0){
-					Console.WriteLine("Items in inventory: ("+player.inventory.GetWeight()*10+"dag/"+player.inventory.GetMaxWeight()*10+"dag)");
-				}
-				foreach(KeyValuePair<string, Item> item in player.inventory.GetInventory()){
-					Console.WriteLine(item.Key+" - "+item.Value.Description+" - "+item.Value.Weight*10+"dag");
-				}
+				Status();
 				break;
 			case "take":
 				Take(command);
 				break;
 			case "drop":
 				Drop(command);
+				break;
+			case "use":
+				Use(command);
 				break;
 		}
 
@@ -157,9 +153,17 @@ class Game
 		}
 		foreach(KeyValuePair<string, Item> item in player.GetCurrentRoom().inventory.GetInventory()){
 					Console.WriteLine(item.Key+" - "+item.Value.Description+" - "+item.Value.Weight*10+"dag");
+		}
 	}
+	private void Status(){
+		Console.WriteLine($"Health: {player.GetHealth()}");
+		if(player.inventory.GetWeight() != 0){
+			Console.WriteLine("Items in inventory: ("+player.inventory.GetWeight()*10+"dag/"+player.inventory.GetMaxWeight()*10+"dag)");
+		}
+		foreach(KeyValuePair<string, Item> item in player.inventory.GetInventory()){
+			Console.WriteLine(item.Key+" - "+item.Value.Description+" - "+item.Value.Weight*10+"dag");
+		}
 	}
-
 	// Try to go to one direction. If there is an exit, enter the new
 	// room, otherwise print an error message.
 	private void Take(Command command){
@@ -212,6 +216,7 @@ class Game
 		{
 			// if there is no second word, we don't know where to go...
 			Console.WriteLine("Go where?");
+			player.Heal(5);
 			return;
 		}
 
@@ -221,11 +226,51 @@ class Game
 		Room nextRoom = player.GetCurrentRoom().GetExit(direction);
 		if (nextRoom == null)
 		{
-			Console.WriteLine("There is no door to "+direction+"!");
+			Console.WriteLine("There is no door to "+direction+".");
+			player.Heal(5);
 			return;
 		}
-
-		player.SetCurrentRoom(nextRoom);
-		Console.WriteLine(player.GetCurrentRoom().GetLongDescription());
+		if (nextRoom.IsLocked()){
+			Console.WriteLine("The door is "+nextRoom.GetLockDescription()+".");
+			player.Heal(5);
+		}
+		else{
+			player.SetCurrentRoom(nextRoom);
+			Console.WriteLine(player.GetCurrentRoom().GetLongDescription());
+		}
+	}
+	private void Use(Command command){
+		if(!command.HasThirdWord()){
+			Console.WriteLine("Not enough arguments passed.");
+			return;
+		}
+		string item = command.SecondWord;
+		string direction = command.ThirdWord;
+		Room room = player.GetCurrentRoom().GetExit(direction);
+		if (room == null){
+			Console.WriteLine("There is no locked door to "+direction+".");
+			return;
+		}
+		if(!room.IsLocked()){
+			Console.WriteLine("The door is already unlocked");
+			return;
+		}
+		if(!room.GetLockType()){
+			if(player.inventory.Contains(item)){
+				if(room.GetCode() == item){
+					Console.WriteLine("The door was unlocked.");
+					room.Unlock();
+				}
+				else{
+					Console.WriteLine("There is no "+item+" in your inventory.");
+				}
+			}
+			else{
+				Console.WriteLine("You don't have a "+item+" in your inventory.");
+			}
+		}
+		else{
+			Console.WriteLine("The door requires a code, and not a "+item+".");
+		}
 	}
 }
