@@ -33,7 +33,6 @@ class Game
 		outside.AddExit("south", lab);
 		outside.AddExit("west", pub);
 		theatre.AddExit("west", outside);
-
 		pub.AddExit("east", outside);
 
 		lab.AddExit("north", outside);
@@ -126,6 +125,9 @@ class Game
 				break;
 			case "use":
 				Use(command);
+				break;
+			case "input":
+				InputCode(command);
 				break;
 		}
 
@@ -252,7 +254,7 @@ class Game
 			return;
 		}
 		if(!room.IsLocked()){
-			Console.WriteLine("The door is already unlocked");
+			Console.WriteLine("The door is already unlocked.");
 			return;
 		}
 		if(!room.GetLockType()){
@@ -271,6 +273,35 @@ class Game
 		}
 		else{
 			Console.WriteLine("The door requires a code, and not a "+item+".");
+		}
+	}
+	private void InputCode(Command command){
+		if(!command.HasThirdWord()){
+			Console.WriteLine("Not enough arguments passed.");
+			return;
+		}
+		string code = command.SecondWord;
+		string direction = command.ThirdWord;
+		Room room = player.GetCurrentRoom().GetExit(direction);
+		if (room == null){
+			Console.WriteLine("There is no locked door to "+direction+".");
+			return;
+		}
+		if(!room.IsLocked()){
+			Console.WriteLine("The door is already unlocked.");
+			return;
+		}
+		if(room.GetLockType()){
+			if(room.GetCode() == code){
+				Console.WriteLine("The door was unlocked.");
+				room.Unlock();
+			}
+			else{
+				Console.WriteLine("The door stayed locked.");
+			}
+		}
+		else{
+			Console.WriteLine("The door requires an item, and not a code.");
 		}
 	}
 }
