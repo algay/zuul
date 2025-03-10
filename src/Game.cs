@@ -32,6 +32,7 @@ class Game
 		outside.AddExit("east", theatre);
 		outside.AddExit("south", lab);
 		outside.AddExit("west", pub);
+
 		theatre.AddExit("west", outside);
 		pub.AddExit("east", outside);
 
@@ -129,6 +130,9 @@ class Game
 			case "input":
 				InputCode(command);
 				break;
+			case "attack":
+				Attack(command);
+				break;
 		}
 
 		return wantToQuit;
@@ -156,14 +160,28 @@ class Game
 		foreach(KeyValuePair<string, Item> item in player.GetCurrentRoom().inventory.GetInventory()){
 					Console.WriteLine(item.Key+" - "+item.Value.Description+" - "+item.Value.Weight*10+"dag");
 		}
+		if(player.GetCurrentRoom().GetEnemies().Count() > 0){
+			Console.WriteLine();
+			Console.WriteLine("Enemies in room:");
+		}
+		foreach(KeyValuePair<string, Enemy> enemy in player.GetCurrentRoom().GetEnemies()){
+			Console.WriteLine(enemy.Key+" - "+enemy.Value.GetHp()+"hp");
+		}
 	}
 	private void Status(){
 		Console.WriteLine($"Health: {player.GetHealth()}");
 		if(player.inventory.GetWeight() != 0){
-			Console.WriteLine("Items in inventory: ("+player.inventory.GetWeight()*10+"dag/"+player.inventory.GetMaxWeight()*10+"dag)");
+			Console.WriteLine("Items in inventory: ("+player.inventory.GetWeight()*10+"/"+player.inventory.GetMaxWeight()*10+")");
 		}
 		foreach(KeyValuePair<string, Item> item in player.inventory.GetInventory()){
-			Console.WriteLine(item.Key+" - "+item.Value.Description+" - "+item.Value.Weight*10+"dag");
+			Console.Write(item.Key+" - "+item.Value.Description+" - "+item.Value.Weight*10+"dag");
+			if(item.Value is Weapon){
+			Weapon weapon = item.Value as Weapon;
+			Console.WriteLine(" - "+weapon.GetMaxDamage()+" dmg");
+			}
+			else{
+			Console.WriteLine();
+			}
 		}
 	}
 	// Try to go to one direction. If there is an exit, enter the new
@@ -241,9 +259,47 @@ class Game
 			Console.WriteLine(player.GetCurrentRoom().GetLongDescription());
 		}
 	}
-	private void Use(Command command){
+	private void Attack(Command command){
+		if(!command.HasSecondWord()){
+			Console.WriteLine("Attack what?");
+			return;
+		}
 		if(!command.HasThirdWord()){
-			Console.WriteLine("Not enough arguments passed.");
+			Console.WriteLine("Attack with what?");
+			return;
+		}
+		string enemy = command.SecondWord;
+		string itemName = command.ThirdWord;
+		if(player.GetCurrentRoom().ContainsEnemy(enemy)){
+			if(player.inventory.Contains(itemName)){
+				if(player.inventory.GetItem(itemName) is Weapon){
+					Weapon weapon = player.inventory.GetItem(itemName) as Weapon;
+					player.GetCurrentRoom().GetEnemy(enemy).Damage(weapon.GetDamage());
+					Console.WriteLine("You "+weapon.GetAttackMessage()+".");
+					if(!player.GetCurrentRoom().GetEnemy(enemy).IsAlive()){
+						Console.WriteLine(player.GetCurrentRoom().GetEnemy(enemy).GetDeathMessage());
+						player.GetCurrentRoom().RemoveEnemy(enemy);
+					}
+				}
+				else{
+					Console.WriteLine(itemName+" is not a weapon.");
+				}
+			}
+			else{
+				Console.WriteLine("You don't have a "+itemName+" in your inventory."); 
+			}
+		}
+		else{
+			Console.WriteLine("There is no "+enemy+" in the room.");
+		}
+	}
+	private void Use(Command command){
+		if(!command.HasSecondWord()){
+			Console.WriteLine("Use what?");
+			return;
+		}
+		if(!command.HasThirdWord()){
+			Console.WriteLine("Use where?");
 			return;
 		}
 		string item = command.SecondWord;
@@ -276,8 +332,12 @@ class Game
 		}
 	}
 	private void InputCode(Command command){
+		if(!command.HasSecondWord()){
+			Console.WriteLine("Input what?");
+			return;
+		}
 		if(!command.HasThirdWord()){
-			Console.WriteLine("Not enough arguments passed.");
+			Console.WriteLine("Input where?");
 			return;
 		}
 		string code = command.SecondWord;

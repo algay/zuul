@@ -10,6 +10,8 @@ class Room
 	private bool lockType;
 	private string code;
 	private string lockDescription;
+	private Dictionary<string, Enemy> enemies;
+
 	// Create a room described "description". Initially, it has no exits.
 	// "description" is something like "in a kitchen" or "in a court yard".
 
@@ -18,6 +20,23 @@ class Room
 		description = desc;
 		exits = new Dictionary<string, Room>();
 		inventory = new Inventory(500);
+		enemies = new Dictionary<string, Enemy>();
+	}
+
+	public Enemy GetEnemy(string name){
+		return enemies[name];
+	}
+	public Dictionary<string, Enemy> GetEnemies(){
+		return enemies;
+	}
+	public bool ContainsEnemy(string name){
+		return enemies.ContainsKey(name);
+	}
+	public void AddEnemy(string name, Enemy enemy){
+		enemies.Add(name, enemy);
+	}
+	public void RemoveEnemy(string name){
+		enemies.Remove(name);
 	}
 	public void Lock(bool typeOfLock, string lockCode, string lockDesc){
 		isLocked = true;
