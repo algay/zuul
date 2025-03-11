@@ -32,6 +32,8 @@ class Game
 		outside.AddExit("east", theatre);
 		outside.AddExit("south", lab);
 		outside.AddExit("west", pub);
+		outside.AddEnemy("goblin", new Enemy(20,5,"swings their branch at you", "dies from bleeding"));
+		outside.inventory.Add("axe", new Weapon(5,"an axe, used for killing",9, "swing your axe at them"));
 
 		theatre.AddExit("west", outside);
 		pub.AddExit("east", outside);
@@ -66,13 +68,14 @@ class Game
 			}
 			else{
 				Console.WriteLine("You Died!");
-				Console.WriteLine("Press [Enter] to try again");
+				Console.WriteLine("Press [Enter] to try again.");
 				Console.ReadLine();
 				NewGame();
+				Look();
 			}
 		}
 		Console.WriteLine("Thank you for playing.");
-		Console.WriteLine("Press [Enter] to continue.");
+		Console.WriteLine("Press [Enter] to quit.");
 		Console.ReadLine();
 	}
 
@@ -98,6 +101,10 @@ class Game
 		{
 			Console.WriteLine("I don't know what you mean...");
 			return wantToQuit; // false
+		}
+		if(player.GetCurrentRoom().GetEnemies().Count() > 0 && command.CommandWord == "go"){
+			Console.WriteLine("You cannot exit the room while enemies are in there.");
+			return wantToQuit;
 		}
 
 		switch (command.CommandWord)
@@ -134,6 +141,14 @@ class Game
 				Attack(command);
 				break;
 		}
+		if(command.CommandWord != "status" && command.CommandWord != "look" && command.CommandWord != "help" && command.CommandWord != "quit"){
+			int damage;
+			foreach(KeyValuePair<string, Enemy> enemy in player.GetCurrentRoom().GetEnemies()){
+				damage = enemy.Value.GetDamage();
+				player.Damage(damage);
+				Console.WriteLine(enemy.Key+" "+enemy.Value.GetAttackMessage()+" for "+damage+" dmg.");
+			}
+		}
 
 		return wantToQuit;
 	}
@@ -141,7 +156,7 @@ class Game
 	// ######################################
 	// implementations of user commands:
 	// ######################################
-	
+
 	// Print out some help information.
 	// Here we print the mission and a list of the command words.
 	private void PrintHelp()
@@ -158,7 +173,7 @@ class Game
 			Console.WriteLine("Items in room: ");
 		}
 		foreach(KeyValuePair<string, Item> item in player.GetCurrentRoom().inventory.GetInventory()){
-					Console.WriteLine(item.Key+" - "+item.Value.Description+" - "+item.Value.Weight*10+"dag");
+			Console.WriteLine(item.Key+" - "+item.Value.Description+" - "+item.Value.Weight*10+"dag");
 		}
 		if(player.GetCurrentRoom().GetEnemies().Count() > 0){
 			Console.WriteLine();
@@ -176,11 +191,11 @@ class Game
 		foreach(KeyValuePair<string, Item> item in player.inventory.GetInventory()){
 			Console.Write(item.Key+" - "+item.Value.Description+" - "+item.Value.Weight*10+"dag");
 			if(item.Value is Weapon){
-			Weapon weapon = item.Value as Weapon;
-			Console.WriteLine(" - "+weapon.GetMaxDamage()+" dmg");
+				Weapon weapon = item.Value as Weapon;
+				Console.WriteLine(" - "+weapon.GetMaxDamage()+" dmg");
 			}
 			else{
-			Console.WriteLine();
+				Console.WriteLine();
 			}
 		}
 	}
@@ -198,10 +213,10 @@ class Game
 			if(player.inventory.GetMaxWeight()>=player.inventory.GetWeight()+item.Weight){
 				player.inventory.Add(itemName, item);
 				player.GetCurrentRoom().inventory.Remove(itemName);
-				Console.WriteLine(itemName+" was added to your inventory!");
+				Console.WriteLine(itemName+" was added to your inventory.");
 			}
 			else {
-				Console.WriteLine("There isn't enough space in your inventory!");
+				Console.WriteLine("There isn't enough space in your inventory.");
 			}
 		}
 		else{
@@ -219,7 +234,7 @@ class Game
 			if(player.GetCurrentRoom().inventory.GetMaxWeight()>=player.GetCurrentRoom().inventory.GetWeight()+item.Weight){
 				player.GetCurrentRoom().inventory.Add(itemName, item);
 				player.inventory.Remove(itemName);
-				Console.WriteLine(itemName+" was dropped from your inventory!");
+				Console.WriteLine(itemName+" was dropped from your inventory.");
 			}
 			else {
 				Console.WriteLine("There isn't enough space in the room");
@@ -274,10 +289,11 @@ class Game
 			if(player.inventory.Contains(itemName)){
 				if(player.inventory.GetItem(itemName) is Weapon){
 					Weapon weapon = player.inventory.GetItem(itemName) as Weapon;
-					player.GetCurrentRoom().GetEnemy(enemy).Damage(weapon.GetDamage());
-					Console.WriteLine("You "+weapon.GetAttackMessage()+".");
+					int damage = weapon.GetDamage();
+					player.GetCurrentRoom().GetEnemy(enemy).Damage(damage);
+					Console.WriteLine("You "+weapon.GetAttackMessage()+" for "+damage+" dmg.");
 					if(!player.GetCurrentRoom().GetEnemy(enemy).IsAlive()){
-						Console.WriteLine(player.GetCurrentRoom().GetEnemy(enemy).GetDeathMessage());
+						Console.WriteLine(enemy+" "+player.GetCurrentRoom().GetEnemy(enemy).GetDeathMessage()+".");
 						player.GetCurrentRoom().RemoveEnemy(enemy);
 					}
 				}
