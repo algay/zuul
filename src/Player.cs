@@ -2,13 +2,15 @@ class Player
 {
 	private int health;
 	private Room currentRoom;
-	public Inventory inventory;
+	private Inventory inventory;
 	
 	public Player(){
 		health = 100;
-		inventory = new Inventory(25);
+		inventory = new Inventory(10);
 	}
-
+	public Inventory GetInventory(){
+		return inventory;
+	}
 	public int GetHealth(){
 		return this.health;
 	}
@@ -23,6 +25,9 @@ class Player
 	}
 	public void Heal(int amount){
 		this.health = this.health + amount;
+		if(this.health > 100){
+			this.health = 100;
+		}
 	}
 	public bool IsAlive(){
 		return (this.health > 0) ? true: false;

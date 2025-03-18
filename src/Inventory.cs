@@ -28,7 +28,7 @@ class Inventory
 	public void Remove(string item){
 		this.items.Remove(item);
 	}
-	public Dictionary<string, Item> GetInventory(){
+	public Dictionary<string, Item> GetItems(){
 		return this.items;
 	}
 	public Item GetItem(string key){

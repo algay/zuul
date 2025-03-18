@@ -5,6 +5,7 @@ class Game
 	// Private fields
 	private Parser parser;
 	private Player player;
+	private Random rnd = new Random();
 
 	// Constructor
 	public Game()
@@ -22,26 +23,71 @@ class Game
 	private void CreateRooms()
 	{
 		// Create the rooms
-		Room outside = new Room("outside the main entrance of the university");
-		Room theatre = new Room("in a lecture theatre");
-		Room pub = new Room("in the campus pub");
-		Room lab = new Room("in a computing lab");
-		Room office = new Room("in the computing admin office");
+		Room corridor = new Room("in an empty corridor.\nThe lights buzz with motive");
+		Room storage = new Room("in the storage facility.\nDust has gathered everywhere");
+		Room kitchen = new Room("in the kitchen.\nThere sits an extinguisher cabinet on the wall");
+		Room engine = new Room("in the engine room.\nThe engine coughs every couple seconds from age");
+		Room escaperoom = new Room("in the escape pod room.\nThere is one escape pod left");
+		Room bedroom = new Room("in the crew bedroom.\nA mirror in the corner.\nOne of the bunkbeds sticks out");
+		Room bridge = new Room("on the ship's bridge.\nThere are a couple sticky notes on the wall");
+		Room medical = new Room("in the medical room.\nThe air feels empty");
+		Room dockingport = new Room("in the docking area.\nThere is emergency foam on the walls");
+		Room electrical = new Room("in the electrical room.\nSome wires are split");
+		Room escapepod = new Room("in the escape pod.\nYou are finally safe");
 
 		// Initialise room exits
-		outside.AddExit("east", theatre);
-		outside.AddExit("south", lab);
-		outside.AddExit("west", pub);
-		outside.AddEnemy("goblin", new Enemy(20,5,"swings their branch at you", "dies from bleeding"));
-		outside.inventory.Add("axe", new Weapon(5,"an axe, used for killing",9, "swing your axe at them"));
+		corridor.AddExit("escape-pod-room", escaperoom);
+		corridor.AddExit("kitchen", kitchen);
+		corridor.AddExit("medical", medical);
+		corridor.AddExit("bridge", bridge);
 
-		theatre.AddExit("west", outside);
-		pub.AddExit("east", outside);
+		kitchen.AddExit("corridor", corridor);
+		kitchen.AddExit("electrical", electrical);
+		kitchen.AddExit("engine", engine);
+		kitchen.AddExit("bedroom", bedroom);
+		kitchen.GetInventory().Add("fire-extinguisher", new Weapon(5, "a tool used for extinguishing fires", 8, "swing the fire extinguisher"));
+		
+		bedroom.AddExit("kitchen",kitchen);
+		bedroom.GetInventory().Add("captains-diary", new Item(1,"on it it is inscribed: A1"));
+		
+		engine.AddExit("kitchen", kitchen);
+		engine.GetInventory().Add("sledgehammer", new Weapon(7, "a sledgehammer, used for smashing",12,"swing the sledgehammer"));
+		engine.Lock(false,"engine-key","locked");
+		engine.AddEnemy("squishy-alien", new Enemy(8,10,"squishes you","gets squished and dies"));
 
-		lab.AddExit("north", outside);
-		lab.AddExit("east", office);
+		bridge.AddExit("corridor", corridor);
+		bridge.Lock(false, "helmsmans-key", "locked");
+		bridge.GetInventory().Add("sticky-note", new Item(1, "new code for storage: B1"));
+		bridge.AddEnemy("silly-alien", new Enemy(20,5,"does something silly","dies from being too silly"));
 
-		office.AddExit("west", lab);
+		medical.AddExit("corridor", corridor);
+		medical.AddExit("storage", storage);
+		medical.Lock(false,"fire-extinguisher","buried in flames");
+		medical.GetInventory().Add("helmsmans-key", new Item(1, "a key held by the helmsman"));
+		medical.AddEnemy("just-a-normal-alien", new Enemy(15,6,"shrugs at you","dies from muscle pain"));
+		
+		storage.AddExit("medical", medical);
+		storage.AddExit("docking-port", dockingport);
+		storage.Lock(true,"B1","locked by a keycode");
+		storage.AddEnemy("head-sized-alien", new Enemy(9,6,"bites you", "falls over and dies"));
+
+		dockingport.AddExit("storage", storage);
+		dockingport.Lock(false,"sledgehammer","fixed by rock-hard emergency foam");
+		dockingport.GetInventory().Add("electrical-key", new Item(1, "a small key with \"electrics\" written on it"));
+		dockingport.AddEnemy("squiggly-alien", new Enemy(12,4,"slaps you with their squiggly hand", "squiggles and dies"));
+		dockingport.AddEnemy("giant-alien", new Enemy(17,8,"swings hard and hits you","falls over and dies"));
+
+		electrical.AddExit("kitchen", kitchen);
+		electrical.Lock(false,"electrical-key","locked");
+		electrical.GetInventory().Add("breaker", new Item(1, "a circuit breaker"));
+		electrical.AddEnemy("electrocuted-alien", new Enemy(20,10,"electrifies you with the power of ohms", "dies from self-induced electrocution"));
+
+		escaperoom.AddExit("corridor", corridor);
+		escaperoom.AddExit("escape-pod", escapepod);
+		escaperoom.Lock(true,"A1","locked by a keycode");
+		escaperoom.GetInventory().Add("engine-key", new Item(1, "a key"));
+
+		escapepod.Lock(false,"breaker","missing an emergency breaker");
 
 		// Create your Items here
 		// ...
@@ -49,7 +95,7 @@ class Game
 		// ...
 
 		// Start game outside
-		player.SetCurrentRoom(outside);
+		player.SetCurrentRoom(corridor);
 	}
 
 	//  Main play routine. Loops until end of play.
@@ -60,11 +106,36 @@ class Game
 		// Enter the main command loop. Here we repeatedly read commands and
 		// execute them until the player wants to quit.
 		bool finished = false;
+		Console.WriteLine();
 		while (!finished)
 		{
 			if (player.IsAlive()){
 				Command command = parser.GetCommand();
+				Console.WriteLine();
 				finished = ProcessCommand(command);
+				if(player.GetCurrentRoom().GetShortDescription() == "in the escape pod.\nYou are finally safe"){
+					finished = true;
+					Console.WriteLine();
+					Console.WriteLine("                ▒                                   ");
+					Console.WriteLine("               ▒████▓▒                              ");
+					Console.WriteLine("           ▒▓▒ ▒██████████▓▒                        ");
+					Console.WriteLine("           ▓█▒ ▒▓██████████████▒    ▒▒              ");
+					Console.WriteLine("           ▓█      ▒▒▓████████▓▒    ▒               ");
+					Console.WriteLine("          ▓██▒▒          ▒▓███▒    ▒▒               ");
+					Console.WriteLine("         ▒▓██████▓▒▒                      ▓▓        ");
+					Console.WriteLine("          ▒▓██████████▓▒               ▒▒   ▓▓▒     ");
+					Console.WriteLine("              ▒▓██████████▓▓          ▒▒▓    ▓▒     ");
+					Console.WriteLine("                  ▒▓████████▒       ▒▓▓▓█▓  ▓█▒     ");
+					Console.WriteLine("                      ▒▓████▒  ▒▓▓▓▒   ▒▓██▓▓▒      ");
+					Console.WriteLine("                         ▒▒▒ ▒▓▓██▓      ▒▒▒▒       ");
+					Console.WriteLine("                                 ▒▒  ▓ ▓            ");
+					Console.WriteLine("                                     █▓             ");
+					Console.WriteLine("                                    ██              ");
+					Console.WriteLine();
+				}
+				if(!finished){
+					Console.WriteLine();
+				}
 			}
 			else{
 				Console.WriteLine("You Died!");
@@ -83,9 +154,36 @@ class Game
 	private void PrintWelcome()
 	{
 		Console.WriteLine();
-		Console.WriteLine("Welcome to Zuul!");
-		Console.WriteLine("Zuul is a new, incredibly boring adventure game.");
-		Console.WriteLine("Type 'help' if you need help.");
+		Console.WriteLine("                                                    ");
+		Console.WriteLine(" ▓▓▓▓▓▓▓▓▓▓▒  █▓▓▓▓█▒▓▒▒▒▒  ▒▒▒▒                    ");
+		Console.WriteLine(" ▓       ▒▓▒  ▓    ▓▒▓  ▒▓ ▒▒  ▓▒█▒▒▒▒▓ ▒▓▒▒▒▒▓     ");
+		Console.WriteLine(" ▓  ▒▓▓▒ ▒▓▒  ▓    ▓▒▓  ▒▓ ▒▓  ▓▒▓    ▓ ▒▓    ▓     ");
+		Console.WriteLine(" ▓  ▒▓▒▓ ▒▓▒  ▓  ▒▓█▒▒▓▒▒▓ ▒▓  ▓▒▓    ▓▒▒▓    ▓▒    ");
+		Console.WriteLine(" ▓████▒▓▒▒▓▒  ▓   ▓ ▓▒  ▒▓ ▒▓  ▓▒█▓▒▒ ▒▓▒▓▒   ▓▒    ");
+		Console.WriteLine(" ▒█▓▓▓▓▓ ▒▓▒  ▓   ▓ ▓▒  ▒▓ ▒▓  ▓▓▒▒▒▒ ▒▓▒▓▒  ▒▓▒▒▒▒ ");
+		Console.WriteLine(" ▒▓ ▒█▓▓▓▓▒  ▒▓   ▓▒▓▒  ▒▓ ▒▓  ▒▒▒▓▒▒ ▒▓ ▒▒  ▓▒▒▒▒▓ ");
+		Console.WriteLine(" ▒▓  ▓▓▒▒▒▒▓▒▒▓   ▓▒▓▒   ▓ ▒▓    ▒▓▒▒  █ ▒▒  ▓▓▒ ▒▓ ");
+		Console.WriteLine(" ▒▓  ▓▒   ▒▓ ▒▓          ▓▒▒▓▒    ▒▒▒  █ ▒▒  ▓▒  ▒▓ ");
+		Console.WriteLine(" ▒▒       ▒▓▒ ▓          ▓▒ ▒▒▒▒▒      █ ▒▒      ▒▓▒");
+		Console.WriteLine(" ▒▓▓▓▒▒▒▒▒▓▒  ▒▒▒▒▒▒▓▓▒▒▒▒   ▒▒▒▒▒▒▒▓▓▓▒ ▒▓▓▓▒▓▓▒▒▒ ");
+		Console.WriteLine("  ▒▓▓▒ ▒▓▓    ▓▒  ▒▒   ▒▒▓▒                 ▓▒█▓▒   ");
+		Console.WriteLine("   ▒▒▒         ▒▒ ▒▓ ▒                              ");
+		Console.WriteLine();
+		Console.WriteLine("                ▒                                   ");
+		Console.WriteLine("               ▒████▓▒                              ");
+		Console.WriteLine("           ▒▓▒ ▒██████████▓▒                        ");
+		Console.WriteLine("           ▓█▒ ▒▓██████████████▒    ▒▒              ");
+		Console.WriteLine("           ▓█      ▒▒▓████████▓▒    ▒               ");
+		Console.WriteLine("          ▓██▒▒          ▒▓███▒    ▒▒               ");
+		Console.WriteLine("         ▒▓██████▓▒▒                                ");
+		Console.WriteLine("          ▒▓██████████▓▒               ▒▒▒  ▒▒▒     ");
+		Console.WriteLine("              ▒▓██████████▓▓          ▒▒▓▓   ▓▒     ");
+		Console.WriteLine("                  ▒▓████████▒       ▒▓▓▓██▓ ▓█▒     ");
+		Console.WriteLine("                      ▒▓████▒  ▒▓▓▓▒   ▒▓████▓▒     ");
+		Console.WriteLine("                         ▒▒▒ ▒▓▓██▓      ▒▒▒▒       ");
+		Console.WriteLine("                                 ▒▒                 ");
+		Console.WriteLine();
+		Console.WriteLine("Type 'help' for commands.");
 		Console.WriteLine();
 		Look();
 	}
@@ -114,7 +212,6 @@ class Game
 				break;
 			case "go":
 				GoRoom(command);
-				player.Damage(5);
 				break;
 			case "quit":
 				wantToQuit = true;
@@ -141,7 +238,7 @@ class Game
 				Attack(command);
 				break;
 		}
-		if(command.CommandWord != "status" && command.CommandWord != "look" && command.CommandWord != "help" && command.CommandWord != "quit"){
+		if(command.CommandWord != "status" && command.CommandWord != "help" && command.CommandWord != "go" && command.CommandWord != "quit"){
 			int damage;
 			foreach(KeyValuePair<string, Enemy> enemy in player.GetCurrentRoom().GetEnemies()){
 				damage = enemy.Value.GetDamage();
@@ -169,11 +266,12 @@ class Game
 	}
 	private void Look(){
 		Console.WriteLine(player.GetCurrentRoom().GetLongDescription());
-		if(player.GetCurrentRoom().inventory.GetWeight() != 0){
+		if(player.GetCurrentRoom().GetInventory().GetWeight() != 0){
+			Console.WriteLine();
 			Console.WriteLine("Items in room: ");
 		}
-		foreach(KeyValuePair<string, Item> item in player.GetCurrentRoom().inventory.GetInventory()){
-			Console.WriteLine(item.Key+" - "+item.Value.Description+" - "+item.Value.Weight*10+"dag");
+		foreach(KeyValuePair<string, Item> item in player.GetCurrentRoom().GetInventory().GetItems()){
+			Console.WriteLine(item.Key+" - "+item.Value.Description+" - "+item.Value.Weight*10);
 		}
 		if(player.GetCurrentRoom().GetEnemies().Count() > 0){
 			Console.WriteLine();
@@ -185,11 +283,12 @@ class Game
 	}
 	private void Status(){
 		Console.WriteLine($"Health: {player.GetHealth()}");
-		if(player.inventory.GetWeight() != 0){
-			Console.WriteLine("Items in inventory: ("+player.inventory.GetWeight()*10+"/"+player.inventory.GetMaxWeight()*10+")");
+		if(player.GetInventory().GetWeight() != 0){
+			Console.WriteLine();
+			Console.WriteLine("Items in inventory: ("+player.GetInventory().GetWeight()*10+"/"+player.GetInventory().GetMaxWeight()*10+")");
 		}
-		foreach(KeyValuePair<string, Item> item in player.inventory.GetInventory()){
-			Console.Write(item.Key+" - "+item.Value.Description+" - "+item.Value.Weight*10+"dag");
+		foreach(KeyValuePair<string, Item> item in player.GetInventory().GetItems()){
+			Console.Write(item.Key+" - "+item.Value.Description+" - "+item.Value.Weight*10);
 			if(item.Value is Weapon){
 				Weapon weapon = item.Value as Weapon;
 				Console.WriteLine(" - "+weapon.GetMaxDamage()+" dmg");
@@ -207,12 +306,12 @@ class Game
 			return;
 		}
 		string itemName = command.SecondWord;
-		if(player.GetCurrentRoom().inventory.Contains(itemName)){
+		if(player.GetCurrentRoom().GetInventory().Contains(itemName)){
 
-			Item item = player.GetCurrentRoom().inventory.GetItem(itemName); 
-			if(player.inventory.GetMaxWeight()>=player.inventory.GetWeight()+item.Weight){
-				player.inventory.Add(itemName, item);
-				player.GetCurrentRoom().inventory.Remove(itemName);
+			Item item = player.GetCurrentRoom().GetInventory().GetItem(itemName); 
+			if(player.GetInventory().GetMaxWeight()>=player.GetInventory().GetWeight()+item.Weight){
+				player.GetInventory().Add(itemName, item);
+				player.GetCurrentRoom().GetInventory().Remove(itemName);
 				Console.WriteLine(itemName+" was added to your inventory.");
 			}
 			else {
@@ -229,14 +328,14 @@ class Game
 			return;
 		}
 		string itemName = command.SecondWord;
-		if(player.inventory.Contains(itemName)){
-			Item item = player.inventory.GetItem(itemName);
-			if(player.GetCurrentRoom().inventory.GetMaxWeight()>=player.GetCurrentRoom().inventory.GetWeight()+item.Weight){
-				player.GetCurrentRoom().inventory.Add(itemName, item);
-				player.inventory.Remove(itemName);
+		if(player.GetInventory().Contains(itemName)){
+			Item item = player.GetInventory().GetItem(itemName);
+			if(player.GetCurrentRoom().GetInventory().GetMaxWeight()>=player.GetCurrentRoom().GetInventory().GetWeight()+item.Weight){
+				player.GetCurrentRoom().GetInventory().Add(itemName, item);
+				player.GetInventory().Remove(itemName);
 				Console.WriteLine(itemName+" was dropped from your inventory.");
 			}
-			else {
+			else{
 				Console.WriteLine("There isn't enough space in the room");
 			}
 		}
@@ -251,7 +350,6 @@ class Game
 		{
 			// if there is no second word, we don't know where to go...
 			Console.WriteLine("Go where?");
-			player.Heal(5);
 			return;
 		}
 
@@ -262,16 +360,14 @@ class Game
 		if (nextRoom == null)
 		{
 			Console.WriteLine("There is no door to "+direction+".");
-			player.Heal(5);
 			return;
 		}
 		if (nextRoom.IsLocked()){
 			Console.WriteLine("The door is "+nextRoom.GetLockDescription()+".");
-			player.Heal(5);
 		}
 		else{
 			player.SetCurrentRoom(nextRoom);
-			Console.WriteLine(player.GetCurrentRoom().GetLongDescription());
+			Look();
 		}
 	}
 	private void Attack(Command command){
@@ -286,9 +382,9 @@ class Game
 		string enemy = command.SecondWord;
 		string itemName = command.ThirdWord;
 		if(player.GetCurrentRoom().ContainsEnemy(enemy)){
-			if(player.inventory.Contains(itemName)){
-				if(player.inventory.GetItem(itemName) is Weapon){
-					Weapon weapon = player.inventory.GetItem(itemName) as Weapon;
+			if(player.GetInventory().Contains(itemName)){
+				if(player.GetInventory().GetItem(itemName) is Weapon){
+					Weapon weapon = player.GetInventory().GetItem(itemName) as Weapon;
 					int damage = weapon.GetDamage();
 					player.GetCurrentRoom().GetEnemy(enemy).Damage(damage);
 					Console.WriteLine("You "+weapon.GetAttackMessage()+" for "+damage+" dmg.");
@@ -330,13 +426,13 @@ class Game
 			return;
 		}
 		if(!room.GetLockType()){
-			if(player.inventory.Contains(item)){
+			if(player.GetInventory().Contains(item)){
 				if(room.GetCode() == item){
-					Console.WriteLine("The door was unlocked.");
+					Console.WriteLine("The door is no longer "+room.GetLockDescription()+".");
 					room.Unlock();
 				}
 				else{
-					Console.WriteLine("There is no "+item+" in your inventory.");
+					Console.WriteLine("The door stays "+room.GetLockDescription()+".");
 				}
 			}
 			else{
@@ -369,11 +465,11 @@ class Game
 		}
 		if(room.GetLockType()){
 			if(room.GetCode() == code){
-				Console.WriteLine("The door was unlocked.");
+				Console.WriteLine("The door is no longer locked.");
 				room.Unlock();
 			}
 			else{
-				Console.WriteLine("The door stayed locked.");
+				Console.WriteLine("The door stays locked.");
 			}
 		}
 		else{

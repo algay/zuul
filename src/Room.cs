@@ -5,7 +5,7 @@ class Room
 	// Private fields
 	private string description;
 	private Dictionary<string, Room> exits; // stores exits of this room.
-	public Inventory inventory;
+	private Inventory inventory;
 	private bool isLocked;
 	private bool lockType;
 	private string code;
@@ -22,7 +22,9 @@ class Room
 		inventory = new Inventory(500);
 		enemies = new Dictionary<string, Enemy>();
 	}
-
+	public Inventory GetInventory(){
+		return inventory;
+	}
 	public Enemy GetEnemy(string name){
 		return enemies[name];
 	}
@@ -79,7 +81,7 @@ class Room
 	{
 		string str = "You are ";
 		str += description;
-		str += ".\n";
+		str += ".\n\n";
 		str += GetExitString();
 		return str;
 	}
