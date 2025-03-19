@@ -22,6 +22,14 @@ class Game
 	// Initialise the Rooms (and the Items)
 	private void CreateRooms()
 	{
+		string passwordI = Convert.ToString(rnd.Next(0,9999));
+		for(int i = passwordI.Length; i<4; i++){
+			passwordI = "0"+passwordI;
+		}
+		string passwordII = Convert.ToString(rnd.Next(0,9999));
+		for(int i = passwordII.Length; i<4; i++){
+			passwordI = "0"+passwordI;
+		}
 		// Create the rooms
 		Room corridor = new Room("in an empty corridor.\nThe lights buzz with motive");
 		Room storage = new Room("in the storage facility.\nDust has gathered everywhere");
@@ -48,7 +56,7 @@ class Game
 		kitchen.GetInventory().Add("fire-extinguisher", new Weapon(5, "a tool used for extinguishing fires", 8, "swing the fire extinguisher"));
 		
 		bedroom.AddExit("kitchen",kitchen);
-		bedroom.GetInventory().Add("captains-diary", new Item(1,"on it it is inscribed: A1"));
+		bedroom.GetInventory().Add("captains-diary", new Item(1,"on it it is inscribed: "+passwordI));
 		
 		engine.AddExit("kitchen", kitchen);
 		engine.GetInventory().Add("sledgehammer", new Weapon(7, "a sledgehammer, used for smashing",12,"swing the sledgehammer"));
@@ -57,7 +65,7 @@ class Game
 
 		bridge.AddExit("corridor", corridor);
 		bridge.Lock(false, "helmsmans-key", "locked");
-		bridge.GetInventory().Add("sticky-note", new Item(1, "new code for storage: B1"));
+		bridge.GetInventory().Add("sticky-note", new Item(1, "new code for storage: "+passwordII));
 		bridge.AddEnemy("silly-alien", new Enemy(20,5,"does something silly","dies from being too silly"));
 
 		medical.AddExit("corridor", corridor);
@@ -68,7 +76,7 @@ class Game
 		
 		storage.AddExit("medical", medical);
 		storage.AddExit("docking-port", dockingport);
-		storage.Lock(true,"B1","locked by a keycode");
+		storage.Lock(true,passwordII,"locked by a keycode");
 		storage.AddEnemy("head-sized-alien", new Enemy(9,6,"bites you", "falls over and dies"));
 
 		dockingport.AddExit("storage", storage);
@@ -84,7 +92,7 @@ class Game
 
 		escaperoom.AddExit("corridor", corridor);
 		escaperoom.AddExit("escape-pod", escapepod);
-		escaperoom.Lock(true,"A1","locked by a keycode");
+		escaperoom.Lock(true,passwordI,"locked by a keycode");
 		escaperoom.GetInventory().Add("engine-key", new Item(1, "a key"));
 
 		escapepod.Lock(false,"breaker","missing an emergency breaker");
