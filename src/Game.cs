@@ -14,6 +14,8 @@ class Game
 	}
 	public void NewGame()
 	{
+		Console.Clear();
+		Console.WriteLine("\x1b[3J");
 		parser = new Parser();
 		player = new Player();
 		CreateRooms();
@@ -87,7 +89,7 @@ class Game
 
 		electrical.AddExit("kitchen", kitchen);
 		electrical.Lock(false,"electrical-key","locked");
-		electrical.GetInventory().Add("breaker", new Item(1, "a circuit breaker"));
+		electrical.GetInventory().Add("breaker", new Item(2, "a circuit breaker"));
 		electrical.AddEnemy("electrocuted-alien", new Enemy(20,10,"electrifies you with the power of ohms", "dies from self-induced electrocution"));
 
 		escaperoom.AddExit("corridor", corridor);
@@ -317,13 +319,18 @@ class Game
 		if(player.GetCurrentRoom().GetInventory().Contains(itemName)){
 
 			Item item = player.GetCurrentRoom().GetInventory().GetItem(itemName); 
-			if(player.GetInventory().GetMaxWeight()>=player.GetInventory().GetWeight()+item.Weight){
-				player.GetInventory().Add(itemName, item);
-				player.GetCurrentRoom().GetInventory().Remove(itemName);
-				Console.WriteLine(itemName+" was added to your inventory.");
-			}
-			else {
-				Console.WriteLine("There isn't enough space in your inventory.");
+			switch (player.GetInventory().Add(itemName, item))
+			{
+				case 0:
+					player.GetCurrentRoom().GetInventory().Remove(itemName);
+					Console.WriteLine(itemName+" was added to your inventory.");
+					break;
+				case 1:
+					Console.WriteLine("There isn't enough space in your inventory.");
+					break;
+				case 2:
+					Console.WriteLine("There already exists an item named "+itemName+" in your inventory.");
+					break;
 			}
 		}
 		else{
@@ -338,13 +345,18 @@ class Game
 		string itemName = command.SecondWord;
 		if(player.GetInventory().Contains(itemName)){
 			Item item = player.GetInventory().GetItem(itemName);
-			if(player.GetCurrentRoom().GetInventory().GetMaxWeight()>=player.GetCurrentRoom().GetInventory().GetWeight()+item.Weight){
-				player.GetCurrentRoom().GetInventory().Add(itemName, item);
-				player.GetInventory().Remove(itemName);
-				Console.WriteLine(itemName+" was dropped from your inventory.");
-			}
-			else{
-				Console.WriteLine("There isn't enough space in the room");
+			switch (player.GetCurrentRoom().GetInventory().Add(itemName, item)){
+				case 0:
+					player.GetCurrentRoom().GetInventory().Add(itemName, item);
+					player.GetInventory().Remove(itemName);
+					Console.WriteLine(itemName+" was dropped from your inventory.");
+					break;
+				case 1:
+					Console.WriteLine("There isn't enough space in the room");
+					break;
+				case 2:
+					Console.WriteLine("There already exists an item named "+itemName+" in the room.");
+					break;
 			}
 		}
 		else{

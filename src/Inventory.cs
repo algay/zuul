@@ -19,8 +19,19 @@ class Inventory
 	public int GetMaxWeight(){
 		return this.maxWeight;
 	}
-	public void Add(string key, Item value){
-		this.items.Add(key, value);
+	public int Add(string key, Item value){
+		if(Contains(key)){
+			return 2;
+		}
+		else{
+			if(GetMaxWeight()>=GetWeight()+value.Weight){
+				this.items.Add(key, value);
+				return 0;
+			}
+			else{
+				return 1;
+			}
+		}
 	}
 	public bool Contains(string item){
 		return this.items.ContainsKey(item);
