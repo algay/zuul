@@ -158,6 +158,8 @@ class Game
 		Console.WriteLine("Thank you for playing.");
 		Console.WriteLine("Press [Enter] to quit.");
 		Console.ReadLine();
+		Console.Clear();
+		Console.WriteLine("\x1b[3J");
 	}
 
 	// Print out the opening message for the player.
@@ -390,6 +392,7 @@ class Game
 			Look();
 		}
 	}
+
 	private void Attack(Command command){
 		if(!command.HasSecondWord()){
 			Console.WriteLine("Attack what?");
@@ -425,6 +428,7 @@ class Game
 			Console.WriteLine("There is no "+enemy+" in the room.");
 		}
 	}
+
 	private void Use(Command command){
 		if(!command.HasSecondWord()){
 			Console.WriteLine("Use what?");
